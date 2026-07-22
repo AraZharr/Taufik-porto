@@ -34,7 +34,3 @@ mongo-bin/
 # Uploads (keep folder structure)
 server/uploads/*
 !server/uploads/.gitkeep
-
-# Misc
-*.md
-!README.md
