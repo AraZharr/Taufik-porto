@@ -11,6 +11,7 @@ exports.get = async (req, res) => {
       data: contact
     });
   } catch (error) {
+    console.error('Contact get error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -27,15 +28,16 @@ exports.update = async (req, res) => {
       contact = await Contact.create({});
     }
 
-    if (email !== undefined) contact.email = email;
-    if (phone !== undefined) contact.phone = phone;
-    if (address !== undefined) contact.address = address;
-    if (github !== undefined) contact.github = github;
-    if (linkedin !== undefined) contact.linkedin = linkedin;
-    if (instagram !== undefined) contact.instagram = instagram;
-    if (twitter !== undefined) contact.twitter = twitter;
+    const updates = {};
+    if (email !== undefined) updates.email = email;
+    if (phone !== undefined) updates.phone = phone;
+    if (address !== undefined) updates.address = address;
+    if (github !== undefined) updates.github = github;
+    if (linkedin !== undefined) updates.linkedin = linkedin;
+    if (instagram !== undefined) updates.instagram = instagram;
+    if (twitter !== undefined) updates.twitter = twitter;
 
-    await contact.save();
+    contact = await Contact.update(contact.id, updates);
 
     res.json({
       success: true,
@@ -43,6 +45,7 @@ exports.update = async (req, res) => {
       data: contact
     });
   } catch (error) {
+    console.error('Contact update error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'

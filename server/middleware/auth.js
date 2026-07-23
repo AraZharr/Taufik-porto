@@ -9,7 +9,7 @@ const auth = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findById(req.session.userId).select('-password');
+    const user = await User.findById(req.session.userId);
     if (!user) {
       req.session.destroy();
       return res.status(401).json({
@@ -20,6 +20,7 @@ const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error('Auth middleware error:', error);
     return res.status(500).json({
       success: false,
       message: 'Authentication error'

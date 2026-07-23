@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
@@ -9,37 +8,42 @@ const Contact = require('./models/Contact');
 
 const seedDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB Connected for seeding');
+    console.log('Starting Supabase seeding...');
 
-    await User.deleteMany({});
-    await Hero.deleteMany({});
-    await About.deleteMany({});
-    await Contact.deleteMany({});
+    // Clear existing data
+    await User.deleteAll();
+    await Hero.deleteAll();
+    await About.deleteAll();
+    await Contact.deleteAll();
+    console.log('Cleared existing data');
 
+    // Create admin user
     const hashedPassword = await bcrypt.hash('admin123', 10);
     await User.create({
       username: 'admin',
       password: hashedPassword
     });
-    console.log('Admin user created');
+    console.log('✓ Admin user created (username: admin, password: admin123)');
 
+    // Create hero content
     await Hero.create({
       heading: 'Hello, I am',
       subheading: 'Full Stack Developer',
       ctaText: 'View My Work',
       ctaLink: '#portfolio',
-      profileImage: 'uploads/default-avatar.png'
+      profileImage: 'default-avatar.png'
     });
-    console.log('Hero content created');
+    console.log('✓ Hero content created');
 
+    // Create about content
     await About.create({
       description: 'Write about yourself here...',
-      image: 'uploads/default-about.png',
+      image: 'default-about.png',
       extraInfo: ''
     });
-    console.log('About content created');
+    console.log('✓ About content created');
 
+    // Create contact content
     await Contact.create({
       email: '',
       phone: '',
@@ -49,12 +53,17 @@ const seedDB = async () => {
       instagram: '',
       twitter: ''
     });
-    console.log('Contact content created');
+    console.log('✓ Contact content created');
 
-    console.log('Database seeded successfully');
+    console.log('\n✅ Database seeded successfully');
+    console.log('\nNext steps:');
+    console.log('1. Create Supabase Storage bucket: portfolio-images (public)');
+    console.log('2. Upload default images to bucket');
+    console.log('3. Start server: npm run dev');
     process.exit(0);
   } catch (error) {
-    console.error(`Seeding error: ${error.message}`);
+    console.error(`❌ Seeding error: ${error.message}`);
+    console.error(error);
     process.exit(1);
   }
 };

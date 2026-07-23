@@ -12,7 +12,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.findByUsername(username);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -28,17 +28,18 @@ exports.login = async (req, res) => {
       });
     }
 
-    req.session.userId = user._id;
+    req.session.userId = user.id;
 
     res.json({
       success: true,
       message: 'Login successful',
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username
       }
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -62,6 +63,7 @@ exports.logout = async (req, res) => {
       });
     });
   } catch (error) {
+    console.error('Logout error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -79,7 +81,7 @@ exports.checkAuth = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.session.userId).select('-password');
+    const user = await User.findById(req.session.userId);
     if (!user) {
       return res.json({
         success: false,
@@ -92,11 +94,12 @@ exports.checkAuth = async (req, res) => {
       success: true,
       isLoggedIn: true,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username
       }
     });
   } catch (error) {
+    console.error('Check auth error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'

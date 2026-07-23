@@ -11,6 +11,7 @@ exports.get = async (req, res) => {
       data: about
     });
   } catch (error) {
+    console.error('About get error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -27,11 +28,12 @@ exports.update = async (req, res) => {
       about = await About.create({});
     }
 
-    if (description !== undefined) about.description = description;
-    if (image !== undefined) about.image = image;
-    if (extraInfo !== undefined) about.extraInfo = extraInfo;
+    const updates = {};
+    if (description !== undefined) updates.description = description;
+    if (image !== undefined) updates.image = image;
+    if (extraInfo !== undefined) updates.extraInfo = extraInfo;
 
-    await about.save();
+    about = await About.update(about.id, updates);
 
     res.json({
       success: true,
@@ -39,6 +41,7 @@ exports.update = async (req, res) => {
       data: about
     });
   } catch (error) {
+    console.error('About update error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'

@@ -1,19 +1,15 @@
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const pgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-const connectDB = require('./config/db');
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-connectDB();
-
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true
 }));
 
@@ -21,13 +17,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  store: new pgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    ttl: 24 * 60 * 60
-  }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,

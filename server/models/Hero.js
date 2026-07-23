@@ -1,45 +1,64 @@
-const mongoose = require('mongoose');
+const supabase = require('../config/supabase');
 
-const heroSchema = new mongoose.Schema({
-  heading: {
-    type: String,
-    required: [true, 'Heading is required'],
-    trim: true,
-    maxlength: [100, 'Heading must not exceed 100 characters'],
-    default: 'Hello, I am'
-  },
-  subheading: {
-    type: String,
-    required: [true, 'Subheading is required'],
-    trim: true,
-    maxlength: [200, 'Subheading must not exceed 200 characters'],
-    default: 'Full Stack Developer'
-  },
-  ctaText: {
-    type: String,
-    trim: true,
-    maxlength: [50, 'CTA text must not exceed 50 characters'],
-    default: 'View My Work'
-  },
-  ctaLink: {
-    type: String,
-    trim: true,
-    maxlength: [200, 'CTA link must not exceed 200 characters'],
-    default: '#portfolio'
-  },
-  profileImage: {
-    type: String,
-    default: 'uploads/default-avatar.png'
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+const mapHero = (row) => {
+  if (!row) return null;
+  return {
+    _id: row.id,
+    id: row.id,
+    heading: row.heading,
+    subheading: row.subheading,
+    ctaText: row.cta_text,
+    ctaLink: row.cta_link,
+    profileImage: row.profile_image,
+    updatedAt: row.updated_at
+  };
+};
+
+const toDb = (fields) => {
+  const out = {};
+  if (fields.heading !== undefined) out.heading = fields.heading;
+  if (fields.subheading !== undefined) out.subheading = fields.subheading;
+  if (fields.ctaText !== undefined) out.cta_text = fields.ctaText;
+  if (fields.ctaLink !== undefined) out.cta_link = fields.ctaLink;
+  if (fields.profileImage !== undefined) out.profile_image = fields.profileImage;
+  return out;
+};
+
+class Hero {
+  static async findOne() {
+    const { data, error } = await supabase.from('hero').select('*').limit(1).maybeSingle();
+    if (error) throw error;
+    return mapHero(data);
   }
-});
 
-heroSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+  static async create(fields = {}) {
+    const payload = {
+      heading: fields.heading ?? 'Hello, I am',
+      subheading: fields.subheading ?? 'Full Stack Developer',
+      cta_text: fields.ctaText ?? 'View My Work',
+      cta_link: fields.ctaLink ?? '#portfolio',
+      profile_image: fields.profileImage ?? 'default-avatar.png'
+    };
+    const { data, error } = await supabase.from('hero').insert(payload).select().single();
+    if (error) throw error;
+    return mapHero(data);
+  }
 
-module.exports = mongoose.model('Hero', heroSchema);
+  static async update(id, fields) {
+    const { data, error } = await supabase
+      .from('hero')
+      .update(toDb(fields))
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapHero(data);
+  }
+
+  static async deleteAll() {
+    const { error } = await supabase.from('hero').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (error) throw error;
+  }
+}
+
+module.exports = Hero;

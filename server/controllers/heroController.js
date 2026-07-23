@@ -11,6 +11,7 @@ exports.get = async (req, res) => {
       data: hero
     });
   } catch (error) {
+    console.error('Hero get error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -27,13 +28,14 @@ exports.update = async (req, res) => {
       hero = await Hero.create({});
     }
 
-    if (heading !== undefined) hero.heading = heading;
-    if (subheading !== undefined) hero.subheading = subheading;
-    if (ctaText !== undefined) hero.ctaText = ctaText;
-    if (ctaLink !== undefined) hero.ctaLink = ctaLink;
-    if (profileImage !== undefined) hero.profileImage = profileImage;
+    const updates = {};
+    if (heading !== undefined) updates.heading = heading;
+    if (subheading !== undefined) updates.subheading = subheading;
+    if (ctaText !== undefined) updates.ctaText = ctaText;
+    if (ctaLink !== undefined) updates.ctaLink = ctaLink;
+    if (profileImage !== undefined) updates.profileImage = profileImage;
 
-    await hero.save();
+    hero = await Hero.update(hero.id, updates);
 
     res.json({
       success: true,
@@ -41,6 +43,7 @@ exports.update = async (req, res) => {
       data: hero
     });
   } catch (error) {
+    console.error('Hero update error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
